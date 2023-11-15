@@ -9,7 +9,7 @@
  *
  * 2023 by Sinntelligence GmbH.
  * This software is part of the projects developed at Sinntelligence GmbH.
- * For more information about our projects and services, visit https://www.sinntelligence.ai.
+ * For more information about our projects and services, visit https://sinntelligence.ai
  */
 
 class Annotate {
@@ -18,6 +18,9 @@ class Annotate {
     static MIN_ZOOM = 0.2; // 20% zoom
     static SCALE_FACTOR = 1.1;
     static HANDLE_SIZE = 15; // Increase the size of the hitbox for easier hovering
+    static DEFAULT_COLOR = "#FF0000"; // Red
+    static DRAW_ANNOTATION_NAME_OFFSET_X = 20;
+    static DRAW_ANNOTATION_NAME_OFFSET_Y = 50;
 
     /**
      * Constructor for the canvas annotation manager.
@@ -28,13 +31,39 @@ class Annotate {
      * @param {string} currentClassName - The current ontology setting, used for categorizing annotations.
      * @param {Number} currentClassId - The current class ID, used for identifying the class of annotations.
      * @param {string} annotationColor - The color for annotations, specified in HEX format (e.g., "#FF0000").
+     * @param {number} handleDrawingSizeHovered - The size of the handle when hovered over, in pixels.
+     * @param {number} handleDrawingSize - The size of the handle when not hovered over, in pixels.
+     * @param {number} annotationDetectionThreshold - The size of the area around an annotation where the cursor is considered to be hovering over it.
+     * @param {string} font - The font style for annotation names.
+     * @param {string} fillStyle - The fill color for annotation names.
+     *
      */
-    constructor(canvasId, shouldShowAnnotations, currentClassName, currentClassId, annotationColor) {
+    constructor(
+        canvasId,
+        shouldShowAnnotations,
+        currentClassName,
+        currentClassId,
+        annotationColor,
+        handleDrawingSizeHovered = 40,
+        handleDrawingSize = 30,
+        annotationDetectionThreshold = 20,
+        font = "40pt Arial",
+        fillStyle = "black",
+        zoomLevel = 1,
+        transparency = "50"
+    ) {
         // Initialize properties with provided values
         this.shouldShowAnnotations = shouldShowAnnotations; // Whether to show annotation names
         this.currentOntology = currentClassName; // Current ontology setting
         this.currentClassId = currentClassId; // Current class ID for annotations
         this.annotationColor = annotationColor; // Color for drawing annotations
+        this.handleDrawingSizeHovered = handleDrawingSizeHovered; // Size of the handle when hovered
+        this.handleDrawingSize = handleDrawingSize; // Size of the handle when not hovered
+        this.annotationDetectionThreshold = annotationDetectionThreshold; // Size of the area around an annotation where the cursor is considered to be hovering over it
+        this.font = font; // Font style for annotation names
+        this.fillStyle = fillStyle; // Fill color for annotation names
+        this.zoomLevel = zoomLevel; // Zoom level for the canvas
+        this.transparency = transparency; // Transparency for the annotations
 
         // Variables for interaction and calculations
 
@@ -315,7 +344,8 @@ class Annotate {
                 this.dragStart = null;
 
                 // If the canvas wasn't dragged, execute zooming based on the shift key state
-                if (!this.dragged) this.zoom(evt.shiftKey ? -1 : 1);
+
+                if (!this.dragged) this.zoom(evt.shiftKey ? -this.zoomLevel : this.zoomLevel);
 
                 // Finalize drawing a new annotation
                 if (this.isDrawingAnnotation) {
@@ -461,9 +491,13 @@ class Annotate {
      * @return {void} This function does not return anything.
      */
     drawAnnotationName(annotation, x, y) {
-        this.ctx.font = "40pt Arial"; // Set the font for the text
-        this.ctx.fillStyle = "black"; // Set the text color to black
-        this.ctx.fillText(annotation.name, x + 20, y + 50); // Draw the name of the annotation with an offset
+        this.ctx.font = this.font; // Set the font for the text
+        this.ctx.fillStyle = this.fillStyle; // Set the text color to black
+        this.ctx.fillText(
+            annotation.name,
+            x + Annotate.DRAW_ANNOTATION_NAME_OFFSET_X,
+            y + Annotate.DRAW_ANNOTATION_NAME_OFFSET_Y
+        ); // Draw the name of the annotation with an offset
     }
 
     /**
@@ -481,7 +515,12 @@ class Annotate {
             var { startX, startY, width, height } = this.getAnnotationDimensions(annotation);
 
             // Check if the coordinates are within the extended boundary of the annotation
-            if (x >= startX - 20 && x <= startX + width + 20 && y >= startY - 20 && y <= startY + height + 20) {
+            if (
+                x >= startX - this.annotationDetectionThreshold &&
+                x <= startX + width + this.annotationDetectionThreshold &&
+                y >= startY - this.annotationDetectionThreshold &&
+                y <= startY + height + this.annotationDetectionThreshold
+            ) {
                 annotation.selected = true;
                 return annotation;
             } else {
@@ -764,7 +803,8 @@ class Annotate {
     drawAnnotation(annotation) {
         // Fill the rectangle with a semi-transparent color
         // The color is taken from the annotation object, defaulting to semi-transparent red if not specified.
-        this.ctx.fillStyle = annotation.annotationColor + "50" || "#FF000050";
+        this.ctx.fillStyle =
+            annotation.annotationColor + this.transparency || Annotate.DEFAULT_COLOR + this.transparency;
         this.ctx.fillRect(
             annotation.start.x,
             annotation.start.y,
@@ -774,7 +814,7 @@ class Annotate {
 
         // Draw the border with a solid color
         // The border color is the same as the fill but fully opaque.
-        this.ctx.strokeStyle = annotation.annotationColor || "#FF0000";
+        this.ctx.strokeStyle = annotation.annotationColor || Annotate.DEFAULT_COLOR;
         this.ctx.lineWidth = 4; // Set the border thickness
         this.ctx.strokeRect(
             annotation.start.x,
@@ -809,7 +849,8 @@ class Annotate {
         // Set the fill color for the handle
         // If the handle is the one being hovered over, set its color to red.
         // Otherwise, use the color of the hovered annotation.
-        this.ctx.fillStyle = this.hoveredHandle === handleName ? "#FF0000" : this.hoveredAnnotation.annotationColor;
+        this.ctx.fillStyle =
+            this.hoveredHandle === handleName ? Annotate.DEFAULT_COLOR : this.hoveredAnnotation.annotationColor;
     }
 
     /**
@@ -825,10 +866,10 @@ class Annotate {
         // Check if the current handle is being hovered over
         if (this.hoveredHandle === handleName) {
             // Draw a larger handle (40x40 px) for the hovered handle for emphasis
-            this.ctx.fillRect(x - 5, y - 5, 40, 40);
+            this.ctx.fillRect(x - 5, y - 5, this.handleDrawingSizeHovered, this.handleDrawingSizeHovered);
         } else {
             // Draw a regular handle (30x30 px) for non-hovered handles
-            this.ctx.fillRect(x, y, 30, 30);
+            this.ctx.fillRect(x, y, this.handleDrawingSize, this.handleDrawingSize);
         }
     }
 

@@ -2,7 +2,7 @@
 
 All notable changes to the [Annotate.js] will be documented in this file.
 
-## [1.0.0] - 2023-11-14
+## [0.1.0] - 2023-11-14
 
 ### Added
 
