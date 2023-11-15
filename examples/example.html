@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Annotate.js Showcase</title>
+        <script src="../src/Annotate.js"></script>
+        <style>
+            canvas {
+                border: 1px solid black;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas style="width: 100%" id="annotationCanvas"></canvas>
+        <script>
+            // Initialize Annotate.js
+            let annotationHandler = new Annotate("annotationCanvas", true, "Frog", 1, "#FF0000");
+
+            // Load and display an image on the canvas
+            annotationHandler.frame.src = "https://images.alphacoders.com/128/1282206.jpg";
+            annotationHandler.frame.onload = function () {
+                // Resize canvas to match image size
+                annotationHandler.canvas.width = annotationHandler.frame.naturalWidth;
+                annotationHandler.canvas.height = annotationHandler.frame.naturalHeight;
+                annotationHandler.ctx.drawImage(annotationHandler.frame, 0, 0);
+            };
+        </script>
+    </body>
+</html>
