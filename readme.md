@@ -47,7 +47,7 @@ Basic usage to start using Annotate.js, add a canvas element in your HTML:
 <canvas id="myCanvas" width="800" height="600"></canvas>
 ```
 
-Initialize .js in your JavaScript:
+Initialize Annotate.js in your JavaScript:
 
 ```javascript
 var annotate = new Annotate("myCanvas", true, "MyClass", 1, "#FF0000");
