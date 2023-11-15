@@ -110,26 +110,69 @@ Initializes the canvas with the given settings, preparing it for drawing and man
 
 ### Zooming and Panning
 
--   **Zooming**: Adjusted via the `zoom` function based on user interactions.
--   **Scroll Handling**: Managed by `handleScroll` to control zooming through mouse wheel actions.
+#### Zoom Function
 
-### Transformation Tracking
+Adjusts the zoom level of the canvas based on user interactions, particularly through mouse wheel movements. The function scales the canvas view in or out while keeping the zoom centered around the current mouse position.
 
--   `trackTransforms()`: Enhances the canvas context to track transformations, aiding in zooming and panning.
+##### Parameters
 
-### User Interface Feedback
+-   **`clicks` (number)**: Represents the zoom level change. Positive values for zooming in, negative for zooming out.
 
--   **Cursor Styles**: Set using `setCursor` based on the annotation handle interaction.
--   **Hover States**: Managed by `isHoveringOverAnnotation` and `isHoveringOverHandle`.
+#### Scroll Handling Function
 
-### Drawing Annotations
+Manages the scroll interaction for zooming purposes. It normalizes scroll actions from mouse wheels or trackpads to determine the zoom direction and magnitude, calling the `zoom` method appropriately.
 
-`drawAnnotation(annotation)`: Renders annotations on the canvas, handling both the fill and the border.
+##### Parameters
 
-### Managing Annotations
+-   **`evt` (Event)**: The scroll event triggered by user interaction with the mouse wheel or trackpad.
 
--   **Adding Annotations**: Done during the drawing process in the `mousemove` event listener.
--   **Removing Annotations**: Managed by removeAnnotations which clears the canvas of all annotations.
+#### Transformation Tracking Function
+
+The `trackTransforms` method enhances the canvas context to track transformations such as scaling, rotation, and translation. This is essential for accurately handling zooming and panning operations on the canvas.
+
+##### Description
+
+This function overrides several canvas context methods (like `save`, `restore`, `scale`, `rotate`, `translate`, `transform`, and `setTransform`) to maintain a record of transformations applied to the canvas. It also adds a `transformedPoint` method to the context for converting coordinates in the transformed space, which is crucial for accurate interaction handling.
+
+#### User Interface Feedback Functions
+
+##### Set Cursor Function
+
+`setCursor(handle)`: Sets the cursor style on the canvas, indicating the type of interaction available (e.g., resizing, moving). The cursor style is determined based on the specific annotation handle being interacted with.
+
+###### Parameters
+
+-   **`handle` (string)**: Identifier for the annotation handle (e.g., 'top-left', 'bottom-right').
+
+##### Hover State Functions
+
+1. **`isHoveringOverAnnotation(x, y)`**: Determines if the provided coordinates are hovering over any annotation on the canvas, returning the annotation object if hovered.
+
+    - **`x` (number)**: X-coordinate relative to the canvas.
+    - **`y` (number)**: Y-coordinate relative to the canvas.
+
+2. **`isHoveringOverHandle(x, y, annotation)`**: Checks if the provided coordinates are over any of the resize handles of a given annotation, returning the handle identifier if hovered.
+
+    - **`x` (number), `y` (number)**: Coordinates relative to the canvas.
+    - **`annotation` (Object)**: The annotation object to check handles for.
+
+#### Drawing Annotations Function
+
+`drawAnnotation(annotation)`: This function is responsible for rendering annotations on the canvas. It takes care of both filling the annotation area and drawing its border.
+
+##### Parameters
+
+-   **`annotation` (Object)**: The annotation object to be drawn. It must have `start` and `end` properties defining the coordinates, and an `annotationColor` property for color.
+
+#### Managing Annotations Functions
+
+##### Adding Annotations
+
+Annotations are added during the drawing process, which is managed within the `mousemove` event listener. This process involves capturing the mouse movement on the canvas and creating annotation objects based on the start and end points defined during the interaction.
+
+##### Removing Annotations Function
+
+`removeAnnotations()`: This function is responsible for removing all annotations from the canvas. It clears the internal annotations array and updates the canvas display to reflect the removal.
 
 ### Event Dispatching
 
